@@ -4,18 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.GridView;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -34,9 +32,10 @@ import earroyof.nytimessearch.R;
 
 public class SearchActivity extends AppCompatActivity {
 
-    EditText etQuery;
-    Button btnSearch;
-    GridView gvResults;
+    //EditText etQuery;
+    //Button btnSearch;
+    //GridView gvResults;
+    RecyclerView rvResults;
 
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
@@ -53,18 +52,19 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void setupViews() {
-        etQuery = (EditText) findViewById(R.id.etQuery);
-        btnSearch = (Button) findViewById(R.id.btnSearch);
-        gvResults = (GridView) findViewById(R.id.gvResults);
+        //etQuery = (EditText) findViewById(R.id.etQuery);
+        //btnSearch = (Button) findViewById(R.id.btnSearch);
+        //gvResults = (GridView) findViewById(R.id.gvResults);
+        rvResults = (RecyclerView) findViewById(R.id.rvResults);
         articles = new ArrayList<>();
-        adapter = new ArticleArrayAdapter(this, articles);
-        gvResults.setAdapter(adapter);
+        adapter = new ArticleArrayAdapter(articles);
+        rvResults.setAdapter(adapter);
 
         // hook up listener for grid click
 
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        adapter.setOnItemClickListener(new ArticleArrayAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(View view, int position) {
                 // create an intent to display the article
                 Intent i = new Intent(getApplicationContext(), ArticleActivity.class);
 
@@ -79,6 +79,12 @@ public class SearchActivity extends AppCompatActivity {
 
             }
         });
+
+        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        LinearLayoutManager linLayoutManager = new LinearLayoutManager(this);
+        linLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        linLayoutManager.scrollToPosition(0);
+        rvResults.setLayoutManager(gridLayoutManager);
 
     }
 
@@ -113,7 +119,8 @@ public class SearchActivity extends AppCompatActivity {
                             articleResults = response.getJSONObject("response").getJSONArray("docs");
                             // V equivalent to making this articles.addall.... and then notifying adapter data has changed
                             // no gotcha's to this
-                            adapter.addAll(Article.fromJsonArray(articleResults));
+                            articles.addAll(Article.fromJsonArray(articleResults));
+                            adapter.notifyDataSetChanged();
                             Log.d("mydebug", articles.toString());
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -150,7 +157,7 @@ public class SearchActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onArticleSearch(View view) {
+    /* public void onArticleSearch(View view) {
         String query = etQuery.getText().toString();
 
         Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
@@ -178,6 +185,6 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-    }
+    } */
 
 }
