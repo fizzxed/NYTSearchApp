@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import cz.msebera.android.httpclient.Header;
 import earroyof.nytimessearch.Article;
 import earroyof.nytimessearch.ArticleArrayAdapter;
+import earroyof.nytimessearch.EndlessRecyclerViewScrollListener;
 import earroyof.nytimessearch.R;
 
 public class SearchActivity extends AppCompatActivity {
@@ -36,6 +36,7 @@ public class SearchActivity extends AppCompatActivity {
     //Button btnSearch;
     //GridView gvResults;
     RecyclerView rvResults;
+    String query;
 
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
@@ -47,21 +48,27 @@ public class SearchActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        setupViews();
+        setupViews(savedInstanceState);
 
     }
 
-    public void setupViews() {
+    public void setupViews(Bundle savedInstanceState) {
         //etQuery = (EditText) findViewById(R.id.etQuery);
         //btnSearch = (Button) findViewById(R.id.btnSearch);
         //gvResults = (GridView) findViewById(R.id.gvResults);
         rvResults = (RecyclerView) findViewById(R.id.rvResults);
-        articles = new ArrayList<>();
+
+        // Check for saved instance state if returning to activity from background
+
+        if (savedInstanceState == null || !savedInstanceState.containsKey("started")) {
+            articles = new ArrayList<>();
+        } else {
+            articles = savedInstanceState.getParcelableArrayList("started");
+        }
         adapter = new ArticleArrayAdapter(articles);
         rvResults.setAdapter(adapter);
 
         // hook up listener for grid click
-
         adapter.setOnItemClickListener(new ArticleArrayAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -80,11 +87,19 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+        // Setup layout manager
         StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        LinearLayoutManager linLayoutManager = new LinearLayoutManager(this);
-        linLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        linLayoutManager.scrollToPosition(0);
         rvResults.setLayoutManager(gridLayoutManager);
+
+        // Setup onScrollListener
+        rvResults.addOnScrollListener(new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to the bottom of the list
+                customLoadMoreDataFromApi(page);
+            }
+        });
 
     }
 
@@ -103,6 +118,7 @@ public class SearchActivity extends AppCompatActivity {
                 // see https://code.google.com/p/android/issues/detail?id=24599
 
                 // processing query
+                SearchActivity.this.query = query;
                 AsyncHttpClient client = new AsyncHttpClient();
                 String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?";
                 RequestParams params = new RequestParams();
@@ -141,6 +157,36 @@ public class SearchActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    public void customLoadMoreDataFromApi(int offset) {
+        AsyncHttpClient client = new AsyncHttpClient();
+        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?";
+        RequestParams params = new RequestParams();
+        params.put("api_key", "3599c1c6e204413eb1a9676f31a22c23");
+        params.put("page", offset);
+        params.put("q", query);
+
+        client.get(url, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                //Log.d("mydebug", response.toString());
+                JSONArray articleResults = null;
+                try {
+                    articleResults = response.getJSONObject("response").getJSONArray("docs");
+                    // V equivalent to making this articles.addall.... and then notifying adapter data has changed
+                    // no gotcha's to this
+                    articles.addAll(Article.fromJsonArray(articleResults));
+
+                    int curSize = adapter.getItemCount();
+                    adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -156,6 +202,13 @@ public class SearchActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("started", articles);
+        super.onSaveInstanceState(outState);
+    }
+
 
     /* public void onArticleSearch(View view) {
         String query = etQuery.getText().toString();
