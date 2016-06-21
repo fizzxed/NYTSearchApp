@@ -1,19 +1,21 @@
 package earroyof.nytimessearch;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by earroyof on 6/20/16.
  */
-public class Article implements Serializable {
+public class Article implements Parcelable {
     public String webUrl;
     public String headline;
-    String thumbnail;
+    public String thumbnail;
 
     public String getWebUrl() {
         return webUrl;
@@ -56,4 +58,37 @@ public class Article implements Serializable {
         }
         return results;
     }
+
+    // Parcelable interface
+
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(webUrl);
+        out.writeString(headline);
+        out.writeString(thumbnail);
+    }
+
+    private Article(Parcel in) {
+        webUrl = in.readString();
+        headline = in.readString();
+        thumbnail = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<Article> CREATOR = new Parcelable.Creator<Article>() {
+        @Override
+        public Article createFromParcel(Parcel source) {
+            return new Article(source);
+        }
+
+        @Override
+        public Article[] newArray(int size) {
+            return new Article[size];
+        }
+    };
 }
