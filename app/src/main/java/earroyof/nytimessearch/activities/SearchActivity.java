@@ -2,17 +2,18 @@ package earroyof.nytimessearch.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -28,15 +29,16 @@ import cz.msebera.android.httpclient.Header;
 import earroyof.nytimessearch.Article;
 import earroyof.nytimessearch.ArticleArrayAdapter;
 import earroyof.nytimessearch.EndlessRecyclerViewScrollListener;
+import earroyof.nytimessearch.Query;
 import earroyof.nytimessearch.R;
+import earroyof.nytimessearch.fragments.EditFilterDialogFragment;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements EditFilterDialogFragment.EditFilterDialogListener {
 
-    //EditText etQuery;
-    //Button btnSearch;
-    //GridView gvResults;
+    MenuItem miProgressItem;
+    View pbLoading;
     RecyclerView rvResults;
-    String query;
+    Query myQuery;
 
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
@@ -49,7 +51,7 @@ public class SearchActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         setupViews(savedInstanceState);
-
+        myQuery = new Query("", this);
     }
 
     public void setupViews(Bundle savedInstanceState) {
@@ -100,7 +102,6 @@ public class SearchActivity extends AppCompatActivity {
                 customLoadMoreDataFromApi(page);
             }
         });
-
     }
 
     @Override
@@ -118,34 +119,11 @@ public class SearchActivity extends AppCompatActivity {
                 // see https://code.google.com/p/android/issues/detail?id=24599
 
                 // processing query
-                SearchActivity.this.query = query;
-                AsyncHttpClient client = new AsyncHttpClient();
-                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?";
-                RequestParams params = new RequestParams();
-                params.put("api_key", "3599c1c6e204413eb1a9676f31a22c23");
-                params.put("page", 0);
-                params.put("q", query);
-
-                client.get(url, params, new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        //Log.d("mydebug", response.toString());
-                        JSONArray articleResults = null;
-                        try {
-                            articleResults = response.getJSONObject("response").getJSONArray("docs");
-                            // V equivalent to making this articles.addall.... and then notifying adapter data has changed
-                            // no gotcha's to this
-                            articles.addAll(Article.fromJsonArray(articleResults));
-                            adapter.notifyDataSetChanged();
-                            Log.d("mydebug", articles.toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                myQuery.setQuery(query);
+                // do a search
+                search(0, true);
 
                 searchView.clearFocus();
-
                 return true;
             }
 
@@ -154,30 +132,36 @@ public class SearchActivity extends AppCompatActivity {
                 return false;
             }
         });
+
         return super.onCreateOptionsMenu(menu);
     }
 
-    public void customLoadMoreDataFromApi(int offset) {
+    public void search(int offset, final boolean newSearch) {
+        showProgressBar();
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?";
         RequestParams params = new RequestParams();
         params.put("api_key", "3599c1c6e204413eb1a9676f31a22c23");
         params.put("page", offset);
-        params.put("q", query);
+        params.put("q", myQuery.getQuery());
+        if (newSearch) articles.clear();
 
         client.get(url, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                //Log.d("mydebug", response.toString());
                 JSONArray articleResults = null;
                 try {
                     articleResults = response.getJSONObject("response").getJSONArray("docs");
-                    // V equivalent to making this articles.addall.... and then notifying adapter data has changed
-                    // no gotcha's to this
                     articles.addAll(Article.fromJsonArray(articleResults));
 
-                    int curSize = adapter.getItemCount();
-                    adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
+                    if (newSearch) {
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        int curSize = adapter.getItemCount();
+                        adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
+                    }
+
+                    hideProgressBar();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -185,6 +169,10 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void customLoadMoreDataFromApi(int offset) {
+        search(offset, false);
     }
 
 
@@ -197,6 +185,7 @@ public class SearchActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            showFilterDialog();
             return true;
         }
 
@@ -209,35 +198,40 @@ public class SearchActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
+    // Progress Item methods
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Store instance of the menu item containing progress
+        miProgressItem = menu.findItem(R.id.miActionProgress);
+        // Extract the action-view from the menu item
+        // ProgressBar v =  (ProgressBar) MenuItemCompat.getActionView(miProgressItem);
+        // Return to finish
+        return super.onPrepareOptionsMenu(menu);
+    }
+    public void showProgressBar() {
+        // Show progress item
+        if (miProgressItem != null) miProgressItem.setVisible(true);
+    }
 
-    /* public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
+    public void hideProgressBar() {
+        // Hide progress item
+        // Must check for null in case of orientation changing while animation has not been cancelled yet
+        if (miProgressItem != null) miProgressItem.setVisible(false);
+    }
 
-        Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
-        AsyncHttpClient client = new AsyncHttpClient();
-        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?";
-        RequestParams params = new RequestParams();
-        params.put("api_key", "3599c1c6e204413eb1a9676f31a22c23");
-        params.put("page", 0);
-        params.put("q", query);
+    @Override
+    public void onFinishFilterDialog(Query query) {
+        Toast.makeText(this, "Hi, " + "test", Toast.LENGTH_SHORT).show();
+    }
 
-        client.get(url, params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                //Log.d("mydebug", response.toString());
-                JSONArray articleResults = null;
-                try {
-                    articleResults = response.getJSONObject("response").getJSONArray("docs");
-                    // V equivalent to making this articles.addall.... and then notifying adapter data has changed
-                    // no gotcha's to this
-                    adapter.addAll(Article.fromJsonArray(articleResults));
-                    Log.d("mydebug", articles.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
-    } */
+    private void showFilterDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        EditFilterDialogFragment editFilterDialogFragment = EditFilterDialogFragment.newInstance("Search Settings");
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("query", myQuery);
+        editFilterDialogFragment.setArguments(bundle);
+        editFilterDialogFragment.show(fm, "fragment_edit_name");
 
+    }
 }

@@ -15,7 +15,7 @@ The following **required** functionality is completed:
 The following **optional** features are implemented:
 
 * [x] Used the **ActionBar SearchView** or custom layout as the query box
-* [ ] User can **share an article link** to their friends or email it to themselves
+* [x] User can **share an article link** to their friends or email it to themselves
 * [ ] Improved the user interface and experiment with image assets and/or styling and coloring
 * [ ] User can click on "settings" which allows selection of **advanced search options** to filter results
   * [ ] User can configure advanced search filters such as:
@@ -27,13 +27,14 @@ The following **optional** features are implemented:
 * [ ] Implements robust error handling, [check if internet is available](http://guides.codepath.com/android/Sending-and-Managing-Network-Requests#checking-for-network-connectivity), handle error cases, network failures
 * [ ] Apply the popular [Butterknife annotation library](http://guides.codepath.com/android/Reducing-View-Boilerplate-with-Butterknife) to reduce view boilerplate.
 * [x] Replace `GridView` with the [RecyclerView](http://guides.codepath.com/android/Using-the-RecyclerView) and the `StaggeredGridLayoutManager` to improve the grid of image results displayed
-* [ ] Replace Picasso with [Glide](http://inthecheesefactory.com/blog/get-to-know-glide-recommended-by-google/en) for more efficient image rendering.
+* [x] Replace Picasso with [Glide](http://inthecheesefactory.com/blog/get-to-know-glide-recommended-by-google/en) for more efficient image rendering.
 
 The following **additional** features are implemented:
 
 * [x] List anything else that you can get done to improve the app functionality!
 * [x] Implemented Parcelable
 * [x] Data persists configuration changes (orientation changing)
+* [x] Custom progress bar persists through configuration changes
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:

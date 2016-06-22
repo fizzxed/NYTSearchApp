@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -119,7 +119,7 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
         String thumbnail = article.getThumbnail();
 
         if (!TextUtils.isEmpty(thumbnail)) {
-            Picasso.with(imageView.getContext()).load(thumbnail).fit().into(imageView);
+            Glide.with(imageView.getContext()).load(thumbnail).into(imageView);
         }
 
     }
@@ -129,36 +129,4 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
         return articles.size();
     }
 
-    /*
-    public View getView(int position, View convertView, ViewGroup parent) {
-        // get the data item for the current position
-        Article article = this.getItem(position);
-
-        // check to see if the existing view is being reused or recycled
-        // if not using recycled view then inflate the layout
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.item_article_result, parent, false);
-        }
-
-        // find the image view inside it
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.ivImage);
-
-        // clear out the recycled image just in case
-        imageView.setImageResource(0);
-
-        TextView tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
-        tvTitle.setText(article.getHeadline());
-
-        // populate the thumbnail image
-        // remote download image in Background
-
-        String thumbnail = article.getThumbnail();
-
-        if (!TextUtils.isEmpty(thumbnail)) {
-            Picasso.with(getContext()).load(thumbnail).fit().into(imageView);
-        }
-        return convertView;
-    }
-    */
 }
