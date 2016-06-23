@@ -9,15 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.Arrays;
+
+import earroyof.nytimessearch.MultiSpinner;
 import earroyof.nytimessearch.Query;
 import earroyof.nytimessearch.R;
 
-public class EditFilterDialogFragment extends DialogFragment implements TextView.OnEditorActionListener {
+public class EditFilterDialogFragment extends DialogFragment implements TextView.OnEditorActionListener, MultiSpinner.MultiSpinnerListener {
 
     Query myQuery;
 
@@ -25,8 +28,14 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
     AutoCompleteTextView atvMaterial;
     AutoCompleteTextView atvName;
 
+    MultiSpinner snNewsDesk;
+    MultiSpinner snMaterial;
+    MultiSpinner snSection;
+
     Button btnOk;
     Button btnClear;
+
+    MultiSpinner spinner;
 
     // Defines the listener interface with a method passing back data result.
     public interface EditFilterDialogListener {
@@ -68,41 +77,23 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         // Reference views
-        atvNewsDesk = (AutoCompleteTextView) view.findViewById(R.id.atvNewsDesk);
-        atvMaterial = (AutoCompleteTextView) view.findViewById(R.id.atvMaterial);
-        atvName = (AutoCompleteTextView) view.findViewById(R.id.atvName);
+        snNewsDesk = (MultiSpinner) view.findViewById(R.id.snNews);
+        snNewsDesk.setItems(Arrays.asList(myQuery.getNewsArray()), "News Desk", this);
+        snMaterial = (MultiSpinner) view.findViewById(R.id.snMaterial);
+        snMaterial.setItems(Arrays.asList(myQuery.getMatArray()), "Material", this);
+        snSection = (MultiSpinner) view.findViewById(R.id.snSection);
+        snSection.setItems(Arrays.asList(myQuery.getSectionArray()), "Section", this);
+
         btnOk = (Button) view.findViewById(R.id.btnOk);
         btnClear = (Button) view.findViewById(R.id.btnClear);
 
-        // Create/Set Adapters
-        ArrayAdapter<String> newsDeskAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, myQuery.getNewsArray());
-        ArrayAdapter<String> secNameAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, myQuery.getSectionArray());
-        ArrayAdapter<String> matTypeAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, myQuery.getMatArray());
 
-        atvNewsDesk.setAdapter(newsDeskAdapter);
-        atvMaterial.setAdapter(matTypeAdapter);
-        atvName.setAdapter(secNameAdapter);
-
-        // Setup work
-
-        atvName.setOnEditorActionListener(this);
-        atvMaterial.setOnEditorActionListener(this);
-        atvNewsDesk.setOnEditorActionListener(this);
-
-        atvName.setSingleLine();
-        atvMaterial.setSingleLine();
-        atvNewsDesk.setSingleLine();
-        atvName.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        atvMaterial.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        atvNewsDesk.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
         // Clear Button functionality
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                atvName.setText("");
-                atvMaterial.setText("");
-                atvNewsDesk.setText("");
+                Toast.makeText(getActivity(), "Clear", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -121,13 +112,13 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         getDialog().setTitle(title);
 
         if (savedInstanceState == null || !savedInstanceState.containsKey("section")) {
-            atvName.setText(myQuery.getSection());
-            atvMaterial.setText(myQuery.getMaterial());
-            atvNewsDesk.setText(myQuery.getNewsDesk());
+            // TODO: Nothing?
+
         } else {
-            atvName.setText(savedInstanceState.getString("section"));
-            atvNewsDesk.setText(savedInstanceState.getString("newsDesk"));
-            atvMaterial.setText(savedInstanceState.getString("material"));
+            snMaterial.setSelected(savedInstanceState.getBooleanArray("material"));
+            snNewsDesk.setSelected(savedInstanceState.getBooleanArray("newsDesk"));
+            boolean[] test = savedInstanceState.getBooleanArray("selection");
+            snSection.setSelected(savedInstanceState.getBooleanArray("section"));
         }
 
 
@@ -138,22 +129,46 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
     }
 
     public void finalizeQuery() {
+        // TODO: Add data to myQuery
+        /*String material = atvMaterial.getText().toString();
+        String name = atvName.getText().toString();
+        String newsDesk = atvNewsDesk.getText().toString();
+        if (!material.isEmpty()) {
+            if (Arrays.binarySearch(myQuery.getMatArray(), material) > 0) {
+                myQuery.setMaterial(material);
+            } else invalidOption();
+        }
+        if (!name.isEmpty()) {
+            if (Arrays.binarySearch(myQuery.getSectionArray(), name) > 0) {
+                myQuery.setSection(name);
+            } else invalidOption();
+        }
+        if (!newsDesk.isEmpty()) {
+            if (Arrays.binarySearch(myQuery.getNewsArray(), newsDesk) > 0) {
+                myQuery.setNewsDesk(newsDesk);
+            } else invalidOption();
+        }
+        */
 
+    }
+
+    public void invalidOption() {
+        Toast.makeText(getActivity(), "Invalid Parameter(s)", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable("queryStart", myQuery);
-        outState.putString("material", atvMaterial.getText().toString());
-        outState.putString("newsDesk", atvNewsDesk.getText().toString());
-        outState.putString("section", atvName.getText().toString());
-
+        outState.putBooleanArray("material", snMaterial.getSelected());
+        outState.putBooleanArray("newsDesk", snNewsDesk.getSelected());
+        outState.putBooleanArray("section", snSection.getSelected());
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (EditorInfo.IME_ACTION_DONE == actionId) {
+            finalizeQuery();
             // Return input text back to activity through the implemented listener
             EditFilterDialogListener listener = (EditFilterDialogListener) getActivity();
             listener.onFinishFilterDialog(myQuery);
@@ -162,6 +177,18 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onPause() {
+        snMaterial.onPause();
+        snSection.onPause();
+        snNewsDesk.onPause();
+        super.onPause();
+    }
+
+    public void onItemsSelected(boolean[] selected) {
+
     }
 
 }

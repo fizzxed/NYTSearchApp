@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -51,7 +50,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
         setSupportActionBar(toolbar);
 
         setupViews(savedInstanceState);
-        myQuery = new Query("", this);
+
     }
 
     public void setupViews(Bundle savedInstanceState) {
@@ -64,8 +63,10 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
 
         if (savedInstanceState == null || !savedInstanceState.containsKey("started")) {
             articles = new ArrayList<>();
+            myQuery = new Query("", this);
         } else {
             articles = savedInstanceState.getParcelableArrayList("started");
+            myQuery = savedInstanceState.getParcelable("queryS");
         }
         adapter = new ArticleArrayAdapter(articles);
         rvResults.setAdapter(adapter);
@@ -195,6 +196,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putParcelableArrayList("started", articles);
+        outState.putParcelable("queryS", myQuery);
         super.onSaveInstanceState(outState);
     }
 
@@ -221,7 +223,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
 
     @Override
     public void onFinishFilterDialog(Query query) {
-        Toast.makeText(this, "Hi, " + "test", Toast.LENGTH_SHORT).show();
+        myQuery = query;
     }
 
 
