@@ -29,28 +29,47 @@ public class Article implements Parcelable {
         return thumbnail;
     }
 
-    public Article(JSONObject jsonObject) {
-        try {
-            this.webUrl = jsonObject.getString("web_url");
-            this.headline = jsonObject.getJSONObject("headline").getString("main");
+    public Article(JSONObject jsonObject, boolean topSearch) {
+        if (topSearch) {
+            try {
+                this.webUrl = jsonObject.getString("url");
+                this.headline = jsonObject.getString("title");
 
-            JSONArray multimedia  = jsonObject.getJSONArray("multimedia");
-            if (multimedia.length() > 0) {
-                JSONObject multimediaJson = multimedia.getJSONObject(0);
-                this.thumbnail = "http://nytimes.com/" + multimediaJson.getString("url");
-            } else {
-                this.thumbnail = "";
+                JSONArray multimedia  = jsonObject.getJSONArray("multimedia");
+                if (multimedia.length() > 1) {
+                    JSONObject multimediaJson = multimedia.getJSONObject(1);
+                    this.thumbnail = multimediaJson.getString("url");
+                } else {
+                    this.thumbnail = "";
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+        } else {
+            try {
+                this.webUrl = jsonObject.getString("web_url");
+                this.headline = jsonObject.getJSONObject("headline").getString("main");
+
+                JSONArray multimedia  = jsonObject.getJSONArray("multimedia");
+                if (multimedia.length() > 1) {
+                    JSONObject multimediaJson = multimedia.getJSONObject(1);
+                    this.thumbnail = "http://nytimes.com/" + multimediaJson.getString("url");
+                } else {
+                    this.thumbnail = "";
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
+
     }
 
-    public static ArrayList<Article> fromJsonArray(JSONArray array) {
+    public static ArrayList<Article> fromJsonArray(JSONArray array, boolean topSearch) {
         ArrayList<Article> results = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             try{
-                results.add(new Article(array.getJSONObject(i)));
+                results.add(new Article(array.getJSONObject(i), topSearch));
 
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -35,6 +35,10 @@ public class Query implements Parcelable {
     private int month;
     private int year;
 
+    // Order field
+
+    private int order;
+
 
     public Query() {
         fieldSetup("");
@@ -59,6 +63,7 @@ public class Query implements Parcelable {
         this.day = 0;
         this.month = 0;
         this.year = 0;
+        this.order = 0;
         try{
             populateLists();
         } catch (IOException e) {
@@ -106,6 +111,14 @@ public class Query implements Parcelable {
 
     public int getYear() {
         return year;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     public ArrayList<String> getMatSelected() {
@@ -219,6 +232,7 @@ public class Query implements Parcelable {
         year = in.readInt();
         month = in.readInt();
         day = in.readInt();
+        order = in.readInt();
     }
 
     @Override
@@ -236,6 +250,7 @@ public class Query implements Parcelable {
         out.writeInt(year);
         out.writeInt(month);
         out.writeInt(day);
+        out.writeInt(order);
     }
 
     @Override

@@ -12,6 +12,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
     Button btnClear;
 
     TextView tvSelectDate;
+    Spinner snSort;
 
     int year;
     int month;
@@ -90,6 +92,7 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         btnClear = (Button) view.findViewById(R.id.btnClear);
 
         tvSelectDate = (TextView) view.findViewById(R.id.tvSelectDate);
+        snSort = (Spinner) view.findViewById(R.id.snSort);
 
 
 
@@ -145,6 +148,12 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
             tvSelectDate.setText(dateform);
         }
 
+        if (savedInstanceState != null && savedInstanceState.containsKey("order")) {
+            snSort.setSelection(savedInstanceState.getInt("order"));
+        } else {
+            snSort.setSelection(myQuery.getOrder());
+        }
+
 
 
         getDialog().getWindow().setSoftInputMode(
@@ -159,6 +168,7 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         myQuery.setYear(year);
         myQuery.setMonth(month);
         myQuery.setDay(day);
+        myQuery.setOrder(snSort.getSelectedItemPosition());
     }
 
     public void invalidOption() {
@@ -175,6 +185,7 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         outState.putInt("month", month);
         outState.putInt("day", day);
         outState.putString("date", tvSelectDate.getText().toString());
+        outState.putInt("order", snSection.getSelectedItemPosition());
         super.onSaveInstanceState(outState);
     }
 

@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import cz.msebera.android.httpclient.Header;
 import earroyof.nytimessearch.ArticleArrayAdapter;
 import earroyof.nytimessearch.EndlessRecyclerViewScrollListener;
 import earroyof.nytimessearch.R;
+import earroyof.nytimessearch.SpacesItemDecoration;
 import earroyof.nytimessearch.dataModels.Article;
 import earroyof.nytimessearch.dataModels.Query;
 import earroyof.nytimessearch.fragments.EditFilterDialogFragment;
@@ -36,7 +38,6 @@ import earroyof.nytimessearch.fragments.EditFilterDialogFragment;
 public class SearchActivity extends AppCompatActivity implements EditFilterDialogFragment.EditFilterDialogListener {
 
     MenuItem miProgressItem;
-    View pbLoading;
     RecyclerView rvResults;
     Query myQuery;
 
@@ -94,8 +95,11 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
         });
 
         // Setup layout manager
-        gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        gridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         rvResults.setLayoutManager(gridLayoutManager);
+
+        SpacesItemDecoration decoration = new SpacesItemDecoration(16);
+        rvResults.addItemDecoration(decoration);
 
         // Setup onScrollListener
         rvResults.addOnScrollListener(new EndlessRecyclerViewScrollListener(gridLayoutManager) {
@@ -106,6 +110,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
                 customLoadMoreDataFromApi(page);
             }
         });
+        topSearch();
     }
 
     @Override
@@ -188,8 +193,13 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
                 url = url + "section_name:(" + lucene + ")";
                 count++;
             }
+        }
 
-
+        if (myQuery.getOrder() == 1) {
+            params.put("sort", "oldest");
+        }
+        if (myQuery.getOrder() == 2) {
+            params.put("sort", "newest");
         }
 
         client.get(url, params, new JsonHttpResponseHandler() {
@@ -198,7 +208,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
                 JSONArray articleResults = null;
                 try {
                     articleResults = response.getJSONObject("response").getJSONArray("docs");
-                    articles.addAll(Article.fromJsonArray(articleResults));
+                    articles.addAll(Article.fromJsonArray(articleResults, false));
 
                     if (newSearch) {
                         adapter.notifyDataSetChanged();
@@ -213,7 +223,47 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
                     e.printStackTrace();
                 }
             }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                Log.d("Reached failure here", "test");
+                hideProgressBar();
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
         });
+
+    }
+
+    public void topSearch() {
+        showProgressBar();
+        AsyncHttpClient client = new AsyncHttpClient();
+        String url = "http://api.nytimes.com/svc/topstories/v2/home.json?";
+        RequestParams params = new RequestParams();
+        params.put("api_key", "3599c1c6e204413eb1a9676f31a22c23");
+
+        client.get(url, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray articleResults = null;
+                try {
+                    articleResults = response.getJSONArray("results");
+                    articles.addAll(Article.fromJsonArray(articleResults, true));
+                    adapter.notifyDataSetChanged();
+
+
+                    hideProgressBar();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                hideProgressBar();
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
+
 
     }
 
