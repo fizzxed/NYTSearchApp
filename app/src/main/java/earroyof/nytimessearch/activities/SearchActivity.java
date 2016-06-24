@@ -1,6 +1,7 @@
 package earroyof.nytimessearch.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
@@ -94,9 +95,14 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
             }
         });
 
+        boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        int rows = 3;
+        if (isLandscape) rows = 4;
+
         // Setup layout manager
-        gridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
+        gridLayoutManager = new StaggeredGridLayoutManager(rows, StaggeredGridLayoutManager.VERTICAL);
         rvResults.setLayoutManager(gridLayoutManager);
+
 
         SpacesItemDecoration decoration = new SpacesItemDecoration(16);
         rvResults.addItemDecoration(decoration);

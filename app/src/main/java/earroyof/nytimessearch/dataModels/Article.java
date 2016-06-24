@@ -53,7 +53,7 @@ public class Article implements Parcelable {
 
                 JSONArray multimedia  = jsonObject.getJSONArray("multimedia");
                 if (multimedia.length() > 1) {
-                    JSONObject multimediaJson = multimedia.getJSONObject(1);
+                    JSONObject multimediaJson = multimedia.getJSONObject(1  );
                     this.thumbnail = "http://nytimes.com/" + multimediaJson.getString("url");
                 } else {
                     this.thumbnail = "";

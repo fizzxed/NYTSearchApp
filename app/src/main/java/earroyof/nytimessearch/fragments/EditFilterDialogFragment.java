@@ -101,6 +101,14 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
             @Override
             public void onClick(View v) {
                 Toast.makeText(getActivity(), "Clear", Toast.LENGTH_SHORT).show();
+                snSort.setSelection(0);
+                year = 0;
+                month = 0;
+                day = 0;
+                tvSelectDate.setText("");
+                snMaterial.setSelected(new boolean[snMaterial.getSelected().length]);
+                snNewsDesk.setSelected(new boolean[snNewsDesk.getSelected().length]);
+                snSection.setSelected(new boolean[snSection.getSelected().length]);
             }
         });
 
