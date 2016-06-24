@@ -13,6 +13,8 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import earroyof.nytimessearch.dataModels.Article;
+
 /**
  * Created by earroyof on 6/20/16.
  */

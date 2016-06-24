@@ -35,6 +35,7 @@ The following **additional** features are implemented:
 * [x] Implemented Parcelable
 * [x] Data persists configuration changes (orientation changing)
 * [x] Custom progress bar persists through configuration changes
+* [x] Clear all button in search filter
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:

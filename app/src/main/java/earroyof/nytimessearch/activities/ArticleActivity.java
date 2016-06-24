@@ -11,7 +11,7 @@ import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import earroyof.nytimessearch.Article;
+import earroyof.nytimessearch.dataModels.Article;
 import earroyof.nytimessearch.R;
 
 public class ArticleActivity extends AppCompatActivity {

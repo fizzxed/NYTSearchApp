@@ -1,4 +1,4 @@
-package earroyof.nytimessearch;
+package earroyof.nytimessearch.dataModels;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -21,9 +21,20 @@ public class Query implements Parcelable {
     public String newsDesk;
     public String section;
 
-    String[] matArray;
-    String[] newsArray;
-    String[] sectionArray;
+    private String[] matArray;
+    private String[] newsArray;
+    private String[] sectionArray;
+
+    private boolean[] matSelect;
+    private boolean[] newsSelect;
+    private boolean[] sectionSelect;
+
+    // date fields
+
+    private int day;
+    private int month;
+    private int year;
+
 
     public Query() {
         fieldSetup("");
@@ -52,6 +63,8 @@ public class Query implements Parcelable {
         }
     }
 
+    /*** Begin Getters and Setters ***/
+
     public void setQuery(String query) {
         this.query = query;
     }
@@ -66,6 +79,60 @@ public class Query implements Parcelable {
 
     public void setSection(String section) {
         this.section = section;
+    }
+
+    public void setMatSelect(boolean[] matSelect) {
+        this.matSelect = matSelect;
+    }
+
+    public void setNewsSelect(boolean[] newsSelect) {
+        this.newsSelect = newsSelect;
+    }
+
+    public void setSectionSelect(boolean[] sectionSelect) {
+        this.sectionSelect = sectionSelect;
+    }
+
+    public ArrayList<String> getMatSelected() {
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0; i < matSelect.length; i++) {
+            if (matSelect[i]) {
+                result.add(matArray[i]);
+            }
+        }
+        return result;
+    }
+
+    public ArrayList<String> getNewsSelected() {
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0; i < newsSelect.length; i++) {
+            if (newsSelect[i]) {
+                result.add(newsArray[i]);
+            }
+        }
+        return result;
+    }
+
+    public ArrayList<String> getSectionSelected() {
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0; i < sectionSelect.length; i++) {
+            if (sectionSelect[i]) {
+                result.add(sectionArray[i]);
+            }
+        }
+        return result;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 
     public String getQuery() {
@@ -96,6 +163,21 @@ public class Query implements Parcelable {
         return sectionArray;
     }
 
+    public String getFormatDay() {
+        return String.format("%02d", day);
+    }
+
+    public String getFormatMonth() {
+        return String.format("%02d", month);
+    }
+
+    public String getFormatYear() {
+        return "" + year;
+    }
+
+
+    /*** End Getters and Setters ***/
+
     public Query(Parcel in) {
         query = in.readString();
         material = in.readString();
@@ -104,6 +186,12 @@ public class Query implements Parcelable {
         matArray = in.createStringArray();
         newsArray = in.createStringArray();
         sectionArray = in.createStringArray();
+        matSelect = in.createBooleanArray();
+        newsSelect = in.createBooleanArray();
+        sectionSelect = in.createBooleanArray();
+        year = in.readInt();
+        month = in.readInt();
+        day = in.readInt();
     }
 
     @Override
@@ -115,6 +203,12 @@ public class Query implements Parcelable {
         out.writeStringArray(matArray);
         out.writeStringArray(newsArray);
         out.writeStringArray(sectionArray);
+        out.writeBooleanArray(matSelect);
+        out.writeBooleanArray(newsSelect);
+        out.writeBooleanArray(sectionSelect);
+        out.writeInt(year);
+        out.writeInt(month);
+        out.writeInt(day);
     }
 
     @Override
@@ -171,5 +265,8 @@ public class Query implements Parcelable {
         newsArray = lines2.toArray(new String[0]);
         sectionArray = lines3.toArray(new String[0]);
         matArray = lines.toArray(new String[0]);
+        newsSelect = new boolean[newsArray.length];
+        sectionSelect = new boolean[sectionArray.length];
+        matSelect = new boolean[matArray.length];
     }
 }

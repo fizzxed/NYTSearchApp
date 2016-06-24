@@ -9,4 +9,10 @@
     <string name="MaterialHint">Enter in a Material Type</string>
     <string name="clear">Clear</string>
     <string name="ok">Ok</string>
+    <string name="sort_prompt">Sort Order</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sortHint">Sort order:</string>
+    <string name="selectdate">Select Date</string>
 </resources>

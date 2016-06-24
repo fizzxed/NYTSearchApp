@@ -25,10 +25,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
-import earroyof.nytimessearch.Article;
+import earroyof.nytimessearch.dataModels.Article;
 import earroyof.nytimessearch.ArticleArrayAdapter;
 import earroyof.nytimessearch.EndlessRecyclerViewScrollListener;
-import earroyof.nytimessearch.Query;
+import earroyof.nytimessearch.dataModels.Query;
 import earroyof.nytimessearch.R;
 import earroyof.nytimessearch.fragments.EditFilterDialogFragment;
 
@@ -236,4 +236,5 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
         editFilterDialogFragment.show(fm, "fragment_edit_name");
 
     }
+
 }

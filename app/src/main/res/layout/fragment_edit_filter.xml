@@ -4,6 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Spinner
+        android:id="@+id/snSort"
+        android:layout_width="wrap_content"
+        android:entries="@array/sort_array"
+        android:prompt="@string/sort_prompt"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/tvSelectDate"
+        android:layout_toStartOf="@+id/tvSelectDate"
+        android:layout_toRightOf="@+id/tvSortHint"
+        android:layout_toEndOf="@+id/tvSortHint"
+        android:paddingTop="3dp" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:id="@+id/snNews"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/snSort"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
@@ -48,5 +61,36 @@
         android:layout_alignEnd="@+id/snMaterial"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sortHint"
+        android:id="@+id/tvSortHint"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/snNews"
+        android:layout_alignRight="@+id/btnClear"
+        android:layout_alignEnd="@+id/btnClear"
+        android:textSize="16sp"
+        android:paddingLeft="8dp"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:paddingTop="3dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/selectdate"
+        android:id="@+id/tvSelectDate"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@+id/snNews"
+        android:textSize="16sp"
+        android:paddingRight="7dp"
+        android:paddingTop="3dp" />
 
 </RelativeLayout>

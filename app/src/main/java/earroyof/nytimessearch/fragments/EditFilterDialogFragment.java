@@ -1,5 +1,6 @@
 package earroyof.nytimessearch.fragments;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -11,16 +12,18 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Arrays;
 
 import earroyof.nytimessearch.MultiSpinner;
-import earroyof.nytimessearch.Query;
 import earroyof.nytimessearch.R;
+import earroyof.nytimessearch.dataModels.Query;
 
-public class EditFilterDialogFragment extends DialogFragment implements TextView.OnEditorActionListener, MultiSpinner.MultiSpinnerListener {
+public class EditFilterDialogFragment extends DialogFragment implements TextView.OnEditorActionListener, MultiSpinner.MultiSpinnerListener,
+        DatePickerDialog.OnDateSetListener {
 
     Query myQuery;
 
@@ -35,7 +38,11 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
     Button btnOk;
     Button btnClear;
 
-    MultiSpinner spinner;
+    TextView tvSelectDate;
+
+    int year;
+    int month;
+    int day;
 
     // Defines the listener interface with a method passing back data result.
     public interface EditFilterDialogListener {
@@ -87,6 +94,8 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         btnOk = (Button) view.findViewById(R.id.btnOk);
         btnClear = (Button) view.findViewById(R.id.btnClear);
 
+        tvSelectDate = (TextView) view.findViewById(R.id.tvSelectDate);
+
 
 
         // Clear Button functionality
@@ -117,39 +126,37 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         } else {
             snMaterial.setSelected(savedInstanceState.getBooleanArray("material"));
             snNewsDesk.setSelected(savedInstanceState.getBooleanArray("newsDesk"));
-            boolean[] test = savedInstanceState.getBooleanArray("selection");
             snSection.setSelected(savedInstanceState.getBooleanArray("section"));
+        }
+
+        tvSelectDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog();
+            }
+        });
+
+        if (savedInstanceState != null && savedInstanceState.containsKey("date")) {
+            day = savedInstanceState.getInt("day");
+            month = savedInstanceState.getInt("month");
+            year = savedInstanceState.getInt("year");
+            tvSelectDate.setText(savedInstanceState.getString("date"));
         }
 
 
 
         getDialog().getWindow().setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         super.onViewCreated(view, savedInstanceState);
     }
 
     public void finalizeQuery() {
-        // TODO: Add data to myQuery
-        /*String material = atvMaterial.getText().toString();
-        String name = atvName.getText().toString();
-        String newsDesk = atvNewsDesk.getText().toString();
-        if (!material.isEmpty()) {
-            if (Arrays.binarySearch(myQuery.getMatArray(), material) > 0) {
-                myQuery.setMaterial(material);
-            } else invalidOption();
-        }
-        if (!name.isEmpty()) {
-            if (Arrays.binarySearch(myQuery.getSectionArray(), name) > 0) {
-                myQuery.setSection(name);
-            } else invalidOption();
-        }
-        if (!newsDesk.isEmpty()) {
-            if (Arrays.binarySearch(myQuery.getNewsArray(), newsDesk) > 0) {
-                myQuery.setNewsDesk(newsDesk);
-            } else invalidOption();
-        }
-        */
-
+        myQuery.setMatSelect(snMaterial.getSelected());
+        myQuery.setNewsSelect(snNewsDesk.getSelected());
+        myQuery.setSectionSelect(snSection.getSelected());
+        myQuery.setYear(year);
+        myQuery.setMonth(month);
+        myQuery.setDay(day);
     }
 
     public void invalidOption() {
@@ -162,6 +169,10 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         outState.putBooleanArray("material", snMaterial.getSelected());
         outState.putBooleanArray("newsDesk", snNewsDesk.getSelected());
         outState.putBooleanArray("section", snSection.getSelected());
+        outState.putInt("year", year);
+        outState.putInt("month", month);
+        outState.putInt("day", day);
+        outState.putString("date", tvSelectDate.getText().toString());
         super.onSaveInstanceState(outState);
     }
 
@@ -185,6 +196,23 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         snSection.onPause();
         snNewsDesk.onPause();
         super.onPause();
+    }
+
+    public void showDatePickerDialog() {
+        DatePickerFragment datePickerFragment = DatePickerFragment.newInstance("Title");
+
+        datePickerFragment.setTargetFragment(EditFilterDialogFragment.this, 300);
+
+        datePickerFragment.show(getFragmentManager(), "datePicker");
+    }
+
+    // handle the date selected
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        this.year = year;
+        this.month = monthOfYear;
+        this.day = dayOfMonth;
+        tvSelectDate.setText(String.format("%02d", month) + "." + String.format("%02d", day) + "." + year);
     }
 
     public void onItemsSelected(boolean[] selected) {
