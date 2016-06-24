@@ -56,6 +56,9 @@ public class Query implements Parcelable {
         this.material = "";
         this.newsDesk = "";
         this.section = "";
+        this.day = 0;
+        this.month = 0;
+        this.year = 0;
         try{
             populateLists();
         } catch (IOException e) {
@@ -91,6 +94,18 @@ public class Query implements Parcelable {
 
     public void setSectionSelect(boolean[] sectionSelect) {
         this.sectionSelect = sectionSelect;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public int getYear() {
+        return year;
     }
 
     public ArrayList<String> getMatSelected() {
@@ -149,6 +164,18 @@ public class Query implements Parcelable {
 
     public String getSection() {
         return section;
+    }
+
+    public boolean[] getMatSelect() {
+        return matSelect;
+    }
+
+    public boolean[] getNewsSelect() {
+        return newsSelect;
+    }
+
+    public boolean[] getSectionSelect() {
+        return sectionSelect;
     }
 
     public String[] getMatArray() {
@@ -227,6 +254,7 @@ public class Query implements Parcelable {
             return new Query[size];
         }
     };
+
 
     public void populateLists() throws IOException {
         AssetManager assetManager = context.getAssets();

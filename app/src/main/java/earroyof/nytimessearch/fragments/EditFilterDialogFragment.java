@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
@@ -26,10 +25,6 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         DatePickerDialog.OnDateSetListener {
 
     Query myQuery;
-
-    AutoCompleteTextView atvNewsDesk;
-    AutoCompleteTextView atvMaterial;
-    AutoCompleteTextView atvName;
 
     MultiSpinner snNewsDesk;
     MultiSpinner snMaterial;
@@ -120,13 +115,14 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         String title = getArguments().getString("title", "Search Settings");
         getDialog().setTitle(title);
 
-        if (savedInstanceState == null || !savedInstanceState.containsKey("section")) {
-            // TODO: Nothing?
-
-        } else {
+        if (savedInstanceState != null && savedInstanceState.containsKey("section")) {
             snMaterial.setSelected(savedInstanceState.getBooleanArray("material"));
             snNewsDesk.setSelected(savedInstanceState.getBooleanArray("newsDesk"));
             snSection.setSelected(savedInstanceState.getBooleanArray("section"));
+        } else {
+            snMaterial.setSelected(myQuery.getMatSelect());
+            snNewsDesk.setSelected(myQuery.getNewsSelect());
+            snSection.setSelected(myQuery.getSectionSelect());
         }
 
         tvSelectDate.setOnClickListener(new View.OnClickListener() {
@@ -141,6 +137,12 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
             month = savedInstanceState.getInt("month");
             year = savedInstanceState.getInt("year");
             tvSelectDate.setText(savedInstanceState.getString("date"));
+        } else if (myQuery.getDay() != 0) {
+            day = myQuery.getDay();
+            month = myQuery.getMonth();
+            year = myQuery.getYear();
+            String dateform = String.format("%02d", month) + "." + String.format("%02d", day) + "." + year;
+            tvSelectDate.setText(dateform);
         }
 
 
@@ -212,7 +214,8 @@ public class EditFilterDialogFragment extends DialogFragment implements TextView
         this.year = year;
         this.month = monthOfYear;
         this.day = dayOfMonth;
-        tvSelectDate.setText(String.format("%02d", month) + "." + String.format("%02d", day) + "." + year);
+        String dateform = String.format("%02d", month) + "." + String.format("%02d", day) + "." + year;
+        tvSelectDate.setText(dateform);
     }
 
     public void onItemsSelected(boolean[] selected) {

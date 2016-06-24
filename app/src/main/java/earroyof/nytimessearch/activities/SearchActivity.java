@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -25,11 +26,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
-import earroyof.nytimessearch.dataModels.Article;
 import earroyof.nytimessearch.ArticleArrayAdapter;
 import earroyof.nytimessearch.EndlessRecyclerViewScrollListener;
-import earroyof.nytimessearch.dataModels.Query;
 import earroyof.nytimessearch.R;
+import earroyof.nytimessearch.dataModels.Article;
+import earroyof.nytimessearch.dataModels.Query;
 import earroyof.nytimessearch.fragments.EditFilterDialogFragment;
 
 public class SearchActivity extends AppCompatActivity implements EditFilterDialogFragment.EditFilterDialogListener {
@@ -41,6 +42,8 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
 
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
+
+    StaggeredGridLayoutManager gridLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +94,7 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
         });
 
         // Setup layout manager
-        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         rvResults.setLayoutManager(gridLayoutManager);
 
         // Setup onScrollListener
@@ -146,6 +149,48 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
         params.put("page", offset);
         params.put("q", myQuery.getQuery());
         if (newSearch) articles.clear();
+
+
+        if (myQuery.getDay() != 0) {
+            params.put("begin_date", myQuery.getFormatYear() + myQuery.getFormatMonth() + myQuery.getFormatDay());
+        }
+
+        if (!myQuery.getNewsSelected().isEmpty() || !myQuery.getMatSelected().isEmpty() || !myQuery.getSectionSelected().isEmpty()) {
+            url = url + "&fq=";
+            int count = 0;
+
+            if (!myQuery.getNewsSelected().isEmpty()) {
+                if (count != 0) url = url + "%20AND%20";
+                String lucene = "";
+                for (String add : myQuery.getNewsSelected()) {
+                    lucene = lucene + "%20\"" + add + "\"";
+                }
+                url = url + "news_desk:(" + lucene + ")";
+                count++;
+            }
+
+            if (!myQuery.getMatSelected().isEmpty()) {
+                if (count != 0) url = url + "%20AND%20";
+                String lucene = "";
+                for (String add : myQuery.getMatSelected()) {
+                    lucene = lucene + "%20\"" + add + "\"";
+                }
+                url = url + "type_of_material:(" + lucene + ")";
+                count++;
+            }
+
+            if (!myQuery.getSectionSelected().isEmpty()) {
+                if (count != 0) url = url + "%20AND%20";
+                String lucene = "";
+                for (String add : myQuery.getSectionSelected()) {
+                    lucene = lucene + "%20\"" + add + "\"";
+                }
+                url = url + "section_name:(" + lucene + ")";
+                count++;
+            }
+
+
+        }
 
         client.get(url, params, new JsonHttpResponseHandler() {
             @Override
@@ -224,6 +269,18 @@ public class SearchActivity extends AppCompatActivity implements EditFilterDialo
     @Override
     public void onFinishFilterDialog(Query query) {
         myQuery = query;
+        if (!myQuery.getQuery().isEmpty()) {
+            search(0, true);
+        }
+        Toast.makeText(this, "Query updated", Toast.LENGTH_SHORT).show();
+        rvResults.addOnScrollListener(new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to the bottom of the list
+                customLoadMoreDataFromApi(page);
+            }
+        });
     }
 
 
